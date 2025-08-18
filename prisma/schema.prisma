@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  sub       String    @unique
+  name      String?
+  picture   String?
+  createdAt DateTime @default(now())
+}
+
+model AudioBook {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  editions  AudioBookEdition[]
+  createdAt DateTime @default(now())
+}
+
+model AudioBookEdition {
+  id              String              @id @default(uuid()) @db.Uuid
+  audioBookId     String              @db.Uuid
+  audioBook       AudioBook           @relation(fields: [audioBookId], references: [id])
+  pages           AudioBookPage[]
+  cover           AudioBookCover?
+  createdAt       DateTime            @default(now())
+}
+
+model AudioBookPage {
+  id                  String                  @id @default(uuid()) @db.Uuid
+  audioBookEditionId  String                  @db.Uuid
+  audioBookEdition    AudioBookEdition        @relation(fields: [audioBookEditionId], references: [id])
+  pageNum             Int
+  images              AudioBookPageImage[]
+  paragraphs          AudioBookPageText[]
+  layoutType          String
+  ttsTrack            AudioBookPageTts?
+  createdAt           DateTime                @default(now())
+}
+
+model AudioBookPageImage {
+  id      String         @id @default(uuid()) @db.Uuid
+  pageId  String         @db.Uuid
+  page    AudioBookPage  @relation(fields: [pageId], references: [id])
+  url     String
+  order   Int
+}
+
+model AudioBookPageText {
+  id      String         @id @default(uuid()) @db.Uuid
+  pageId  String         @db.Uuid
+  page    AudioBookPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  text    String
+  order   Int
+}
+
+model AudioBookPageTts {
+  id         String         @id @default(uuid()) @db.Uuid
+  pageId     String         @unique @db.Uuid
+  page       AudioBookPage  @relation(fields: [pageId], references: [id])
+  audioUrl   String
+  wordTimings Json          @db.JsonB
+  createdAt  DateTime       @default(now())
+}
+
+model AudioBookCover {
+  id                 String                @id @default(uuid()) @db.Uuid
+  audioBookEditionId String                @unique @db.Uuid
+  audioBookEdition   AudioBookEdition      @relation(fields: [audioBookEditionId], references: [id])
+  elements           AudioBookCoverElement[]
+  createdAt          DateTime              @default(now())
+}
+
+model AudioBookCoverElement {
+  id         String              @id @default(uuid()) @db.Uuid
+  coverId    String              @db.Uuid
+  cover      AudioBookCover      @relation(fields: [coverId], references: [id])
+  type       String
+  content    String
+  x          Float
+  y          Float
+  width      Float?
+  height     Float?
+  fontSize   Int?
+  fontColor  String?
+  fontFamily String?
+  zIndex     Int
+  createdAt  DateTime            @default(now())
+}
