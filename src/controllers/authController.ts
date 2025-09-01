@@ -52,7 +52,7 @@ export const authorize = (req: Request, res: Response) => {
 
   const params = new URLSearchParams({
     client_id: idpClientId,
-    redirect_uri: "https://1d2c34fcef98.ngrok-free.app/api/auth/callback",
+    redirect_uri: "https://apibeta.ownabee.com/api/auth/callback",
     response_type: "code",
     scope: "openid email profile",
     // access_type: "offline",

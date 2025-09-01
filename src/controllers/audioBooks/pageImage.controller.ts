@@ -16,8 +16,7 @@ export const getPageImageById = async (req: Request, res: Response) => {
     const pageImage = await prisma.audioBookPageImage.findUnique({
       where: { id },
     });
-    if (!pageImage)
-      return res.status(404).json({ error: "Audiobook pageImages not found" });
+    if (!pageImage) return res.status(404).json({ error: "Audiobook pageImages not found" });
     res.status(200).json(pageImage);
   } catch (error) {
     res.status(500).json({});
@@ -27,7 +26,7 @@ export const getPageImageById = async (req: Request, res: Response) => {
 export const createPageImage = async (req: Request, res: Response) => {
   try {
     const pageImage = await prisma.audioBookPageImage.create({
-      data: { ...req.body },
+      data: { ...req.body, userId: req.user!.userId },
     });
     res.status(201).json(pageImage);
   } catch (error) {

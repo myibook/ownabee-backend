@@ -1,0 +1,1 @@
+ALTER TABLE "AudioBookPageImage" ADD CONSTRAINT "AudioBookPageImage_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "AudioBookPage"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

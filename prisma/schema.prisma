@@ -8,79 +8,109 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  email     String   @unique
-  sub       String    @unique
-  name      String?
-  picture   String?
-  createdAt DateTime @default(now())
+  id                     String                  @id @default(uuid()) @db.Uuid
+  email                  String                  @unique
+  sub                    String                  @unique
+  name                   String?
+  picture                String?
+  createdAt              DateTime                @default(now())
+  ttsVoices              TtsVoice[]
+  audioBooks             AudioBook[]
+  audioBookEditions      AudioBookEdition[]
+  audioBookPages         AudioBookPage[]
+  audioBookPageImages    AudioBookPageImage[]
+  audioBookPageTexts     AudioBookPageText[]
+  audioBookPageTts       AudioBookPageTts[]
+  audioBookCovers        AudioBookCover[]
+  audioBookCoverElements AudioBookCoverElement[]
 }
 
 model AudioBook {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String             @id @default(uuid()) @db.Uuid
   title     String
+  createdAt DateTime           @default(now())
   editions  AudioBookEdition[]
-  createdAt DateTime @default(now())
+  userId    String?            @db.Uuid
+  user      User?              @relation(fields: [userId], references: [id])
 }
 
 model AudioBookEdition {
-  id              String              @id @default(uuid()) @db.Uuid
-  audioBookId     String              @db.Uuid
-  audioBook       AudioBook           @relation(fields: [audioBookId], references: [id])
-  pages           AudioBookPage[]
-  cover           AudioBookCover?
-  createdAt       DateTime            @default(now())
+  id            String                  @id @default(uuid()) @db.Uuid
+  audioBookId   String                  @db.Uuid
+  createdAt     DateTime                @default(now())
+  characterUids String[]                @default([])
+  characterGenerationStatus String      @default("NULL")
+  cover         AudioBookCover?
+  audioBook     AudioBook               @relation(fields: [audioBookId], references: [id])
+  pages         AudioBookPage[]
+  pageTexts     AudioBookPageText[]
+  editionImages AudioBookEditionImage[]
+  userId        String?                 @db.Uuid
+  user          User?                   @relation(fields: [userId], references: [id])
 }
 
 model AudioBookPage {
-  id                  String                  @id @default(uuid()) @db.Uuid
-  audioBookEditionId  String                  @db.Uuid
-  audioBookEdition    AudioBookEdition        @relation(fields: [audioBookEditionId], references: [id])
-  pageNum             Int
-  images              AudioBookPageImage[]
-  paragraphs          AudioBookPageText[]
-  layoutType          String
-  ttsTrack            AudioBookPageTts?
-  createdAt           DateTime                @default(now())
+  id                 String           @id @default(uuid()) @db.Uuid
+  audioBookEditionId String           @db.Uuid
+  order              Int
+  layout             Json
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  audioBookEdition   AudioBookEdition @relation(fields: [audioBookEditionId], references: [id])
+  userId             String?          @db.Uuid
+  user               User?            @relation(fields: [userId], references: [id])
 }
 
 model AudioBookPageImage {
-  id      String         @id @default(uuid()) @db.Uuid
-  pageId  String         @db.Uuid
-  page    AudioBookPage  @relation(fields: [pageId], references: [id])
-  url     String
-  order   Int
+  id     String  @id @default(uuid()) @db.Uuid
+  pageId String  @db.Uuid
+  url    String
+  order  Int
+  userId String? @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id])
 }
 
 model AudioBookPageText {
-  id      String         @id @default(uuid()) @db.Uuid
-  pageId  String         @db.Uuid
-  page    AudioBookPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  text    String
-  order   Int
+  id                   String             @id @default(uuid()) @db.Uuid
+  audioBookEditionId   String             @db.Uuid
+  originalText         String
+  grammarCorrectedText String
+  grammarChecked       Boolean
+  order                Int
+  audioBookEdition     AudioBookEdition   @relation(fields: [audioBookEditionId], references: [id], onDelete: Cascade)
+  ttsAudios            AudioBookPageTts[]
+  userId               String?            @db.Uuid
+  user                 User?              @relation(fields: [userId], references: [id])
 }
 
 model AudioBookPageTts {
-  id         String         @id @default(uuid()) @db.Uuid
-  pageId     String         @unique @db.Uuid
-  page       AudioBookPage  @relation(fields: [pageId], references: [id])
-  audioUrl   String
-  wordTimings Json          @db.JsonB
-  createdAt  DateTime       @default(now())
+  id                String            @id @default(uuid()) @db.Uuid
+  pageTextId        String            @db.Uuid
+  ttsVoiceId        String            @db.Uuid
+  transcript        Json
+  createdAt         DateTime          @default(now())
+  audioBookPageText AudioBookPageText @relation(fields: [pageTextId], references: [id], onDelete: Cascade)
+  ttsVoice          TtsVoice          @relation(fields: [ttsVoiceId], references: [id])
+  userId            String?           @db.Uuid
+  user              User?             @relation(fields: [userId], references: [id])
+
+  @@unique([pageTextId, ttsVoiceId])
 }
 
 model AudioBookCover {
-  id                 String                @id @default(uuid()) @db.Uuid
-  audioBookEditionId String                @unique @db.Uuid
-  audioBookEdition   AudioBookEdition      @relation(fields: [audioBookEditionId], references: [id])
+  id                 String                  @id @default(uuid()) @db.Uuid
+  audioBookEditionId String                  @unique @db.Uuid
+  createdAt          DateTime                @default(now())
+  audioBookEdition   AudioBookEdition        @relation(fields: [audioBookEditionId], references: [id])
   elements           AudioBookCoverElement[]
-  createdAt          DateTime              @default(now())
+  components         Json
+  userId             String?                 @db.Uuid
+  user               User?                   @relation(fields: [userId], references: [id])
 }
 
 model AudioBookCoverElement {
-  id         String              @id @default(uuid()) @db.Uuid
-  coverId    String              @db.Uuid
-  cover      AudioBookCover      @relation(fields: [coverId], references: [id])
+  id         String         @id @default(uuid()) @db.Uuid
+  coverId    String         @db.Uuid
   type       String
   content    String
   x          Float
@@ -91,5 +121,32 @@ model AudioBookCoverElement {
   fontColor  String?
   fontFamily String?
   zIndex     Int
-  createdAt  DateTime            @default(now())
+  createdAt  DateTime       @default(now())
+  cover      AudioBookCover @relation(fields: [coverId], references: [id])
+  userId     String?        @db.Uuid
+  user       User?          @relation(fields: [userId], references: [id])
+}
+
+model AudioBookEditionImage {
+  id                 String           @id @default(uuid()) @db.Uuid
+  audioBookEditionId String           @db.Uuid
+  url                String
+  order              Int
+  createdAt          DateTime         @default(now())
+  audioBookEdition   AudioBookEdition @relation(fields: [audioBookEditionId], references: [id])
+}
+
+model TtsVoice {
+  id           String             @id @default(uuid()) @db.Uuid
+  modelId      String
+  modelName    String
+  displayName  String
+  status       String
+  displayImage String?
+  displayColor String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  ttsAudios    AudioBookPageTts[]
+  userId       String?            @db.Uuid
+  user         User?              @relation(fields: [userId], references: [id])
 }

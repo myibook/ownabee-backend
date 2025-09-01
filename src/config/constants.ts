@@ -22,7 +22,7 @@ if (
   !APP_SCHEME
 ) {
   console.error(
-    "Critical environment variables are missing. Please check your .env file."
+    "Critical environment variables are missing. Please check your .env file.",
   );
   process.exit(1);
 }

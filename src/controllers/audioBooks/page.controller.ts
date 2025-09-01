@@ -14,8 +14,7 @@ export const getPageById = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const page = await prisma.audioBookPage.findUnique({ where: { id } });
-    if (!page)
-      return res.status(404).json({ error: "Audiobook page not found" });
+    if (!page) return res.status(404).json({ error: "Audiobook page not found" });
     res.status(200).json(page);
   } catch (error) {
     res.status(500).json({});
@@ -24,7 +23,7 @@ export const getPageById = async (req: Request, res: Response) => {
 
 export const createPage = async (req: Request, res: Response) => {
   try {
-    const page = await prisma.audioBookPage.create({ data: { ...req.body } });
+    const page = await prisma.audioBookPage.create({ data: { ...req.body, userId: req.user!.userId } });
     res.status(201).json(page);
   } catch (error) {
     res.status(500).json({});
