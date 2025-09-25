@@ -8,8 +8,8 @@
     "build": "tsc",
     "start": "yarn build && node dist/index.js",
     "format": "prettier --write .",
-    "db:migrate:create": "npx prisma migrate dev --name",
-    "db:migrate:apply": "npx prisma migrate deploy",
+    "db:migrate": "npx prisma migrate dev --name",
+    "db:migrate:prod": "npx prisma migrate deploy",
     "db:seed": "npx prisma db seed"
   },
   "prisma": {

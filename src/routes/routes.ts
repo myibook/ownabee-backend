@@ -12,7 +12,7 @@ router.use("/audiobooks", authenticate, audioBooksRoutes);
 router.use("/tts", authenticate, ttsRoutes);
 router.use("/grammar", authenticate, grammarRoutes);
 router.use("/user", authenticate, userRoutes);
-router.use("/storyImages", authenticate, storyImagesRoutes);
+router.use("/storyimages", authenticate, storyImagesRoutes);
 
 // router.use("/audiobooks", authenticate, audioBooksRoutes);
 // router.use("/user", authenticate, userRoutes);

@@ -74,12 +74,13 @@ export const generateCharactersForEdition = async (req: Request, res: Response) 
 // Generate a scene image from character IDs and a scene description; optionally attach to page and/or edition
 export const generateSceneImageWithCharacters = async (req: Request, res: Response) => {
   try {
-    const { characterUids, prompt, attachToPageId, audioBookEditionId, ratio } = req.body as {
+    const { characterUids, prompt, attachToPageId, audioBookEditionId, ratio, pageTextId } = req.body as {
       characterUids?: string[];
       prompt?: string;
       attachToPageId?: string;
       audioBookEditionId?: string;
       ratio?: string;
+      pageTextId?: string;
     };
 
     if (!prompt?.trim()) {
@@ -166,6 +167,15 @@ export const generateSceneImageWithCharacters = async (req: Request, res: Respon
       pageImageId = img.id;
     }
 
+    let pageTextImageId: string | undefined;
+    if (pageTextId) {
+      const count = await prisma.audioBookPageTextImage.count({ where: { pageTextId } });
+      const img = await prisma.audioBookPageTextImage.create({
+        data: { pageTextId, url: sceneUrl, order: count + 1 },
+      });
+      pageTextImageId = img.id;
+    }
+
     let editionImageId: string | undefined;
     if (audioBookEditionId) {
       const count = await prisma.audioBookEditionImage.count({
@@ -180,6 +190,7 @@ export const generateSceneImageWithCharacters = async (req: Request, res: Respon
     return res.json({
       sceneImageUrl: sceneUrl,
       pageImageId,
+      pageTextImageId,
       editionImageId,
       btbMeta: { token_usage: scene.token_usage, cost: scene.cost },
     });
@@ -201,6 +212,22 @@ export const getEditionImages = async (req: Request, res: Response) => {
     return res.json(images);
   } catch (err) {
     console.error("getEditionImages error:", err);
+    return res.status(500).json({ error: "Failed to fetch images" });
+  }
+};
+
+// Fetch saved images for an AudioBookPageText
+export const getPageTextImages = async (req: Request, res: Response) => {
+  try {
+    const { pageTextId } = req.params as { pageTextId: string };
+    if (!pageTextId) return res.status(400).json({ error: "pageTextId is required" });
+    const images = await prisma.audioBookPageTextImage.findMany({
+      where: { pageTextId },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.json(images);
+  } catch (err) {
+    console.error("getPageTextImages error:", err);
     return res.status(500).json({ error: "Failed to fetch images" });
   }
 };

@@ -23,6 +23,7 @@ model User {
   audioBookPageTts       AudioBookPageTts[]
   audioBookCovers        AudioBookCover[]
   audioBookCoverElements AudioBookCoverElement[]
+  audioBookPageTextImages AudioBookPageTextImage[]
 }
 
 model AudioBook {
@@ -79,6 +80,7 @@ model AudioBookPageText {
   order                Int
   audioBookEdition     AudioBookEdition   @relation(fields: [audioBookEditionId], references: [id], onDelete: Cascade)
   ttsAudios            AudioBookPageTts[]
+  textImages           AudioBookPageTextImage[]
   userId               String?            @db.Uuid
   user                 User?              @relation(fields: [userId], references: [id])
 }
@@ -134,6 +136,17 @@ model AudioBookEditionImage {
   order              Int
   createdAt          DateTime         @default(now())
   audioBookEdition   AudioBookEdition @relation(fields: [audioBookEditionId], references: [id])
+}
+
+model AudioBookPageTextImage {
+  id         String            @id @default(uuid()) @db.Uuid
+  pageTextId String            @db.Uuid
+  url        String
+  order      Int
+  createdAt  DateTime          @default(now())
+  pageText   AudioBookPageText @relation(fields: [pageTextId], references: [id], onDelete: Cascade)
+  userId     String?           @db.Uuid
+  user       User?             @relation(fields: [userId], references: [id])
 }
 
 model TtsVoice {
